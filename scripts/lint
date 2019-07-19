@@ -1,0 +1,8 @@
+#!/bin/sh -e
+
+set -x
+
+mypy starlette_files --ignore-missing-imports
+autoflake --in-place --recursive --remove-unused-variables starlette_files tests
+black starlette_files tests
+isort --multi-line=3 --trailing-comma --force-grid-wrap=0 --combine-as --line-width 88 --recursive --apply starlette_files tests

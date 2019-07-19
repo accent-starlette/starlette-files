@@ -1,0 +1,17 @@
+# Package
+
+-e .
+
+# Testing
+autoflake
+black
+isort
+mypy
+pytest
+pytest-cov
+requests
+
+# Example
+python-multipart
+uvicorn
+git+https://github.com/accent-starlette/starlette-core.git@master#egg=starlette-core
