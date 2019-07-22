@@ -48,7 +48,7 @@ class Homepage(HTTPEndpoint):
     async def post(self, request):
         form = await request.form()
         model = MyModel()
-        model.file = await MyFS.create_from(form["file"], form["file"].filename)
+        model.file = await MyFS.create_from(form["file"].file, form["file"].filename)
         model.save()
         html = f"""
         <html>

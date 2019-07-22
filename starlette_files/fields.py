@@ -3,7 +3,6 @@ import typing
 import uuid
 
 from sqlalchemy.ext.mutable import MutableDict
-from starlette.datastructures import UploadFile
 
 from .exceptions import ContentTypeValidationError
 from .mimetypes import guess_extension, magic_mime_from_buffer
@@ -35,7 +34,7 @@ class FileAttachment(MutableDict):
 
     @classmethod
     async def create_from(
-        cls, file: UploadFile, original_filename: str
+        cls, file: typing.IO, original_filename: str
     ) -> "FileAttachment":
         instance = cls()
 
@@ -45,7 +44,7 @@ class FileAttachment(MutableDict):
         instance.uploaded_on = time.time()
 
         # use python magic to get the content type
-        content_type = cls._guess_content_type(file.file)
+        content_type = cls._guess_content_type(file)
         extension = guess_extension(content_type)
 
         instance.content_type = content_type
@@ -55,7 +54,7 @@ class FileAttachment(MutableDict):
         # validate
         instance.validate()
 
-        size = instance.storage.put(instance.path, file.file)
+        size = instance.storage.put(instance.path, file)
 
         instance.file_size = size
 
