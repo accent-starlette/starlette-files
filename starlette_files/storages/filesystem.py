@@ -22,12 +22,17 @@ class FileSystemStorage(Storage):
         if not exists(physical_directory):
             makedirs(physical_directory, exist_ok=True)
 
+        stream.seek(0)
+
         with open(physical_path, mode="wb") as target_file:
             return copy_stream(stream, target_file, chunk_size=self.chunk_size)
 
     def delete(self, filename: str) -> None:
         physical_path = self._get_physical_path(filename)
         remove(physical_path)
+
+    def open(self, filename: str, mode: str = "rb") -> typing.IO:
+        return open(self._get_physical_path(filename), mode=mode)
 
     def locate(self, filename: str) -> str:
         return f"{self.root_path}/{filename}"

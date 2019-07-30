@@ -72,6 +72,9 @@ setup(
     extras_require={
         "s3": [
             "boto3",
+        ],
+        "image": [
+            "Pillow",
         ]
     },
     classifiers=[

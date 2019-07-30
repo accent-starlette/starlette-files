@@ -10,3 +10,7 @@ class ContentTypeValidationError(Exception):
             message += "Valid options are: %s" % ", ".join(valid_content_types)
 
         super().__init__(message)
+
+
+class MissingDependencyError(Exception):
+    pass

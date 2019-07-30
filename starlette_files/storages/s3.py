@@ -1,7 +1,9 @@
 import typing
 import urllib
+from io import BytesIO
 
 from ..constants import KB
+from ..exceptions import MissingDependencyError
 from .base import Storage
 
 # Importing optional stuff required by S3 store
@@ -24,7 +26,9 @@ class S3Storage(Storage):
         acl: str = "private",
     ) -> None:
         if boto3 is None:  # pragma: no cover
-            raise ImportError("boto3 is not installed")
+            raise MissingDependencyError(
+                "boto3 must be installed to use the 'S3Storage' class."
+            )
 
         self.session = boto3.session.Session()
         self.config = boto3.session.Config(
@@ -66,6 +70,7 @@ class S3Storage(Storage):
 
     def put(self, filename: str, stream: typing.IO) -> int:
         path = self.get_s3_path(filename)
+        stream.seek(0)
         data = stream.read()
         content_type = getattr(stream, "content_type", None)
         rrs = getattr(stream, "reproducible", False)
@@ -75,6 +80,11 @@ class S3Storage(Storage):
     def delete(self, filename: str) -> None:
         path = self.get_s3_path(filename)
         self.bucket.Object(path).delete()
+
+    def open(self, filename: str, mode: str = "rb") -> typing.IO:
+        path = self.get_s3_path(filename)
+        obj = self.bucket.Object(path).get()
+        return BytesIO(obj["Body"].read())
 
     def _strip_signing_parameters(self, url):
         split_url = urllib.parse.urlsplit(url)

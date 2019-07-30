@@ -25,6 +25,15 @@ class Storage:
         """
         raise NotImplementedError()
 
+    def open(self, filename: str, mode: str = "rb") -> typing.IO:
+        """
+        Should be overridden in inherited class and return a file-like object
+        representing the file in the store.
+        :param filename: The filename to open.
+        :param mode: same as the `mode` in famous :func:`.open` function.
+        """
+        raise NotImplementedError()
+
     def locate(self, filename: str) -> str:
         """
         If overridden in the inherited class, should locates the file's url

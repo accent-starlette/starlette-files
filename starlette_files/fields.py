@@ -1,12 +1,18 @@
 import time
 import typing
 import uuid
+from io import BytesIO
 
 from sqlalchemy.ext.mutable import MutableDict
 
-from .exceptions import ContentTypeValidationError
+from .exceptions import ContentTypeValidationError, MissingDependencyError
 from .mimetypes import guess_extension, magic_mime_from_buffer
 from .storages import Storage
+
+try:
+    from PIL import Image
+except ImportError:  # pragma: no cover
+    Image = None
 
 
 class FileAttachment(MutableDict):
@@ -115,3 +121,67 @@ class FileAttachment(MutableDict):
     @property
     def locate(self) -> str:
         return self.storage.locate(self.path)
+
+    @property
+    def open(self) -> typing.IO:
+        return self.storage.open(self.path)
+
+
+class ImageAttachment(FileAttachment):
+
+    directory: str = "images"
+    allowed_content_type: typing.List[str] = ["image/jpeg", "image/png"]
+
+    @classmethod
+    async def create_from(
+        cls, file: typing.IO, original_filename: str
+    ) -> "ImageAttachment":
+        if Image is None:
+            raise MissingDependencyError(
+                "pillow must be installed to use the 'ImageAttachment' class."
+            )
+
+        instance = cls()
+
+        unique_name = str(uuid.uuid4())
+
+        instance.original_filename = original_filename
+        instance.uploaded_on = time.time()
+
+        # use python magic to get the content type
+        content_type = cls._guess_content_type(file)
+        extension = guess_extension(content_type)
+
+        instance.content_type = content_type
+        instance.extension = extension
+        instance.saved_filename = f"{unique_name}{extension}"
+
+        # validate
+        instance.validate()
+
+        output = BytesIO()
+
+        with Image.open(file) as image:
+            instance.width, instance.height = image.size
+            image.save(output, image.format)
+
+        size = instance.storage.put(instance.path, output)
+        instance.file_size = size
+
+        return instance
+
+    @property
+    def width(self) -> int:
+        return self.get("width")
+
+    @width.setter
+    def width(self, value: int) -> None:
+        self["width"] = value
+
+    @property
+    def height(self) -> int:
+        return self.get("height")
+
+    @height.setter
+    def height(self, value: int) -> None:
+        self["height"] = value

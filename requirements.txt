@@ -1,6 +1,6 @@
 # Package
 
--e .
+-e .[image]
 
 # Testing
 autoflake
@@ -12,6 +12,7 @@ pytest-cov
 requests
 
 # Example
+aiofiles
 python-multipart
 uvicorn
 git+https://github.com/accent-starlette/starlette-core.git@master#egg=starlette-core
