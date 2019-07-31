@@ -8,7 +8,6 @@ from starlette_core.database import Base, Database, Session
 
 from starlette_files.constants import MB
 from starlette_files.fields import ImageAttachment
-from starlette_files.middleware import LimitUploadSize
 from starlette_files.storages import FileSystemStorage
 
 root_directory = "/tmp/starlette"
@@ -18,6 +17,7 @@ class MyImage(ImageAttachment):
     storage = FileSystemStorage(root_directory)
     directory = "images"
     allowed_content_types = ["image/jpeg", "image/png"]
+    max_length = MB * 2
 
 
 class MyImageModel(Base):
@@ -28,7 +28,6 @@ db = Database("sqlite:///")
 db.create_all()
 
 app = Starlette(debug=True)
-app.add_middleware(LimitUploadSize, max_upload_size=MB * 5)
 app.mount("/fs", StaticFiles(directory=root_directory, check_dir=False), name="fs")
 
 @app.route("/")
@@ -58,7 +57,7 @@ class Homepage(HTTPEndpoint):
         <head></head>
         <body>
             <pre>{model.file}</pre>
-            <img src="{image_url}">
+            <img src="{image_url}" style="max-width:100%;">
             <p>{model.file.locate}</p>
             <a href="/">Again...</a>
         </body>

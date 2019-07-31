@@ -12,5 +12,10 @@ class ContentTypeValidationError(Exception):
         super().__init__(message)
 
 
+class MaximumAllowedFileLengthError(Exception):
+    def __init__(self, max_length: int):
+        super().__init__("Cannot store files larger than: %d bytes" % max_length)
+
+
 class MissingDependencyError(Exception):
     pass

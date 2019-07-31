@@ -4,7 +4,12 @@ import uuid
 
 from sqlalchemy.ext.mutable import MutableDict
 
-from .exceptions import ContentTypeValidationError, MissingDependencyError
+from .constants import MB
+from .exceptions import (
+    ContentTypeValidationError,
+    MaximumAllowedFileLengthError,
+    MissingDependencyError,
+)
 from .helpers import get_length
 from .mimetypes import guess_extension, magic_mime_from_buffer
 from .storages import Storage
@@ -20,6 +25,7 @@ class FileAttachment(MutableDict):
     storage: Storage
     directory: str = "files"
     allowed_content_types: typing.List[str] = []
+    max_length = MB * 2
 
     @staticmethod
     def _guess_content_type(file: typing.IO) -> str:
@@ -32,7 +38,7 @@ class FileAttachment(MutableDict):
 
         return magic_mime_from_buffer(content)
 
-    def set_defaults(self, file: typing.IO, original_filename: str):
+    def set_defaults(self, file: typing.IO, original_filename: str) -> None:
         unique_name = str(uuid.uuid4())
 
         self.original_filename = original_filename
@@ -52,6 +58,8 @@ class FileAttachment(MutableDict):
             raise ContentTypeValidationError(
                 self.content_type, self.allowed_content_types
             )
+        if self.file_size > self.max_length:
+            raise MaximumAllowedFileLengthError(self.max_length)
 
     @classmethod
     async def create_from(
