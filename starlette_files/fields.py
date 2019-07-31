@@ -1,11 +1,11 @@
 import time
 import typing
 import uuid
-from io import BytesIO
 
 from sqlalchemy.ext.mutable import MutableDict
 
 from .exceptions import ContentTypeValidationError, MissingDependencyError
+from .helpers import get_length
 from .mimetypes import guess_extension, magic_mime_from_buffer
 from .storages import Storage
 
@@ -44,6 +44,7 @@ class FileAttachment(MutableDict):
 
         self.content_type = content_type
         self.extension = extension
+        self.file_size = get_length(file)
         self.saved_filename = f"{unique_name}{extension}"
 
     def validate(self) -> None:
@@ -61,9 +62,7 @@ class FileAttachment(MutableDict):
         instance.set_defaults(file, original_filename)
         instance.validate()
 
-        size = instance.storage.put(instance.path, file)
-
-        instance.file_size = size
+        instance.storage.put(instance.path, file)
 
         return instance
 
@@ -147,15 +146,9 @@ class ImageAttachment(FileAttachment):
         instance.set_defaults(file, original_filename)
         instance.validate()
 
-        output = BytesIO()
+        instance.width, instance.height = Image.open(file).size
 
-        image = Image.open(file)
-        instance.width, instance.height = image.size
-        image.save(output, image.format)
-
-        size = instance.storage.put(instance.path, output)
-
-        instance.file_size = size
+        instance.storage.put(instance.path, file)
 
         return instance
 

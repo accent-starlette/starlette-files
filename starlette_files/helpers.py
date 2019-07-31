@@ -1,4 +1,5 @@
 import typing
+from io import BytesIO
 
 from .constants import KB
 
@@ -11,4 +12,10 @@ def copy_stream(source, target: typing.IO, *, chunk_size: int = 16 * KB) -> int:
             break
         length += len(buf)
         target.write(buf)
+    return length
+
+
+def get_length(source: typing.IO) -> int:
+    buffer = BytesIO()
+    length = copy_stream(source, buffer)
     return length
