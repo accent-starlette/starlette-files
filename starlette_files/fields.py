@@ -19,7 +19,7 @@ class FileAttachment(MutableDict):
 
     storage: Storage
     directory: str = "files"
-    allowed_content_type: typing.List[str] = []
+    allowed_content_types: typing.List[str] = []
 
     @staticmethod
     def _guess_content_type(file: typing.IO) -> str:
@@ -32,10 +32,24 @@ class FileAttachment(MutableDict):
 
         return magic_mime_from_buffer(content)
 
+    def set_defaults(self, file: typing.IO, original_filename: str):
+        unique_name = str(uuid.uuid4())
+
+        self.original_filename = original_filename
+        self.uploaded_on = time.time()
+
+        # use python magic to get the content type
+        content_type = self._guess_content_type(file)
+        extension = guess_extension(content_type)
+
+        self.content_type = content_type
+        self.extension = extension
+        self.saved_filename = f"{unique_name}{extension}"
+
     def validate(self) -> None:
-        if self.content_type not in self.allowed_content_type:
+        if self.content_type not in self.allowed_content_types:
             raise ContentTypeValidationError(
-                self.content_type, self.allowed_content_type
+                self.content_type, self.allowed_content_types
             )
 
     @classmethod
@@ -44,20 +58,7 @@ class FileAttachment(MutableDict):
     ) -> "FileAttachment":
         instance = cls()
 
-        unique_name = str(uuid.uuid4())
-
-        instance.original_filename = original_filename
-        instance.uploaded_on = time.time()
-
-        # use python magic to get the content type
-        content_type = cls._guess_content_type(file)
-        extension = guess_extension(content_type)
-
-        instance.content_type = content_type
-        instance.extension = extension
-        instance.saved_filename = f"{unique_name}{extension}"
-
-        # validate
+        instance.set_defaults(file, original_filename)
         instance.validate()
 
         size = instance.storage.put(instance.path, file)
@@ -130,7 +131,7 @@ class FileAttachment(MutableDict):
 class ImageAttachment(FileAttachment):
 
     directory: str = "images"
-    allowed_content_type: typing.List[str] = ["image/jpeg", "image/png"]
+    allowed_content_types: typing.List[str] = ["image/jpeg", "image/png"]
 
     @classmethod
     async def create_from(
@@ -143,29 +144,17 @@ class ImageAttachment(FileAttachment):
 
         instance = cls()
 
-        unique_name = str(uuid.uuid4())
-
-        instance.original_filename = original_filename
-        instance.uploaded_on = time.time()
-
-        # use python magic to get the content type
-        content_type = cls._guess_content_type(file)
-        extension = guess_extension(content_type)
-
-        instance.content_type = content_type
-        instance.extension = extension
-        instance.saved_filename = f"{unique_name}{extension}"
-
-        # validate
+        instance.set_defaults(file, original_filename)
         instance.validate()
 
         output = BytesIO()
 
-        with Image.open(file) as image:
-            instance.width, instance.height = image.size
-            image.save(output, image.format)
+        image = Image.open(file)
+        instance.width, instance.height = image.size
+        image.save(output, image.format)
 
         size = instance.storage.put(instance.path, output)
+
         instance.file_size = size
 
         return instance

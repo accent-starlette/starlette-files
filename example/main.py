@@ -17,7 +17,7 @@ root_directory = "/tmp/starlette"
 class MyImage(ImageAttachment):
     storage = FileSystemStorage(root_directory)
     directory = "images"
-    allowed_content_type = ["image/jpeg", "image/png"]
+    allowed_content_types = ["image/jpeg", "image/png"]
 
 
 class MyImageModel(Base):
