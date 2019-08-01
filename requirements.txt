@@ -13,6 +13,7 @@ requests
 
 # Example
 aiofiles
+jinja2
 python-multipart
 uvicorn
 git+https://github.com/accent-starlette/starlette-core.git@master#egg=starlette-core

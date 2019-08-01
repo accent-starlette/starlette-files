@@ -1,0 +1,39 @@
+<html>
+<head>
+    <style>
+        img { max-width: 100%; }
+        pre, img, p { margin-bottom: 10px; }
+    </style>
+</head>
+<body>
+    <pre>{{ image.file }}</pre>
+    <img src="{{ url_for('fs', path=image.file.path) }}">
+    <p>{{ image.file.locate }}</p>
+
+    {% with rendition = image.get_rendition(["width-250"]) %}
+    <pre>{{ rendition.file }}</pre>
+    <img src="{{ url_for('fs', path=rendition.file.path) }}">
+    <p>{{ rendition.file.locate }}</p>
+    {% endwith %}
+    
+    {% with rendition = image.get_rendition(["height-300"]) %}
+    <pre>{{ rendition.file }}</pre>
+    <img src="{{ url_for('fs', path=rendition.file.path) }}">
+    <p>{{ rendition.file.locate }}</p>
+    {% endwith %}
+
+    {% with rendition = image.get_rendition(["fill-200x200"]) %}
+    <pre>{{ rendition.file }}</pre>
+    <img src="{{ url_for('fs', path=rendition.file.path) }}">
+    <p>{{ rendition.file.locate }}</p>
+    {% endwith %}
+
+    {% with rendition = image.get_rendition(["fill-200x200", "format-jpeg"]) %}
+    <pre>{{ rendition.file }}</pre>
+    <img src="{{ url_for('fs', path=rendition.file.path) }}">
+    <p>{{ rendition.file.locate }}</p>
+    {% endwith %}
+
+    <a href="/">Again...</a>
+</body>
+</html>
