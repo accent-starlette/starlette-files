@@ -1,3 +1,4 @@
+import hashlib
 import io
 import time
 import typing
@@ -223,6 +224,24 @@ class ImageAttachment(FileAttachment):
     def focal_point_height(self, value: int) -> None:
         self["focal_point_height"] = value
 
+    @property
+    def cache_key(self) -> str:
+        """
+        can be used in renditions to check if the original image has changed
+        since the rendition was created to determine whether the rendition
+        needs to be recreated. 
+        """
+        
+        vary_fields = [
+            str(self.file_size),
+            str(self.focal_point_x),
+            str(self.focal_point_y),
+            str(self.focal_point_width),
+            str(self.focal_point_height)
+        ]
+        vary_string = "-".join(vary_fields)
+        return hashlib.sha1(vary_string.encode("utf-8")).hexdigest()[:8]
+
 
 class ImageRenditionAttachment(FileAttachment):
     directory: str = "image-renditions"
@@ -249,6 +268,7 @@ class ImageRenditionAttachment(FileAttachment):
             content_type = f"image/{image_format}"
             extension = guess_extension(content_type)
 
+            instance.cache_key = attachment.cache_key
             instance.content_type = content_type
             instance.extension = extension
             instance.saved_filename = f"{unique_name}{extension}"
@@ -274,3 +294,12 @@ class ImageRenditionAttachment(FileAttachment):
     @height.setter
     def height(self, value: int) -> None:
         self["height"] = value
+
+    @property
+    def cache_key(self) -> str:
+        return self.get("cache_key")
+
+    @cache_key.setter
+    def cache_key(self, value: str) -> None:
+        self["cache_key"] = value
+    
