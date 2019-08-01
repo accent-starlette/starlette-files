@@ -12,6 +12,14 @@ class ContentTypeValidationError(Exception):
         super().__init__(message)
 
 
+class InvalidFilterSpecError(Exception):
+    pass
+
+
+class InvalidImageOperationError(Exception):
+    pass
+
+
 class MaximumAllowedFileLengthError(Exception):
     def __init__(self, max_length: int):
         super().__init__("Cannot store files larger than: %d bytes" % max_length)

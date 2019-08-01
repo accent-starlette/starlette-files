@@ -1,5 +1,7 @@
-import sqlalchemy as sa
 import uvicorn
+import sqlalchemy as sa
+
+from sqlalchemy import orm
 from starlette.applications import Starlette
 from starlette.endpoints import HTTPEndpoint
 from starlette.responses import HTMLResponse
@@ -7,7 +9,7 @@ from starlette.staticfiles import StaticFiles
 from starlette_core.database import Base, Database, Session
 
 from starlette_files.constants import MB
-from starlette_files.fields import ImageAttachment
+from starlette_files.fields import ImageAttachment, ImageRenditionAttachment
 from starlette_files.storages import FileSystemStorage
 
 root_directory = "/tmp/starlette"
@@ -17,11 +19,23 @@ class MyImage(ImageAttachment):
     storage = FileSystemStorage(root_directory)
     directory = "images"
     allowed_content_types = ["image/jpeg", "image/png"]
-    max_length = MB * 2
+    max_length = MB * 5
+
+
+class MyImageRendition(ImageRenditionAttachment):
+    storage = FileSystemStorage(root_directory)
+    directory = "image-renditions"
 
 
 class MyImageModel(Base):
     file = sa.Column(MyImage.as_mutable(sa.JSON))
+    renditions = orm.relationship("MyImageRenditionModel")
+
+
+class MyImageRenditionModel(Base):
+    image_id = sa.Column(sa.Integer, sa.ForeignKey("myimagemodel.id"), nullable=False)
+    image = orm.relationship("MyImageModel")
+    file = sa.Column(MyImageRendition.as_mutable(sa.JSON))
 
 
 db = Database("sqlite:///")
@@ -48,17 +62,30 @@ class Homepage(HTTPEndpoint):
 
     async def post(self, request):
         form = await request.form()
-        model = MyImageModel()
-        model.file = await MyImage.create_from(form["file"].file, form["file"].filename)
-        model.save()
-        image_url = request.url_for("fs", path=model.file.path)
+
+        image = MyImageModel(
+            file=MyImage.create_from(form["file"].file, form["file"].filename)
+        )
+        image.save()
+
+        rendition = MyImageRenditionModel(
+            file=MyImageRendition.create_from(image.file, ["fill-200x200"]),
+            image=image
+        )
+        rendition.save()
+
+        image_url = request.url_for("fs", path=image.file.path)
+        rendition_url = request.url_for("fs", path=rendition.file.path)
         html = f"""
         <html>
         <head></head>
         <body>
-            <pre>{model.file}</pre>
+            <pre>{image.file}</pre>
             <img src="{image_url}" style="max-width:100%;">
-            <p>{model.file.locate}</p>
+            <p>{image.file.locate}</p>
+            <pre>{rendition.file}</pre>
+            <img src="{rendition_url}" style="max-width:100%;">
+            <p>{rendition.file.locate}</p>
             <a href="/">Again...</a>
         </body>
         </html>

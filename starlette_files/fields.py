@@ -1,3 +1,4 @@
+import io
 import time
 import typing
 import uuid
@@ -11,6 +12,8 @@ from .exceptions import (
     MissingDependencyError,
 )
 from .helpers import get_length
+from .image.filter import ImageFilter
+from .image.rect import Rect
 from .mimetypes import guess_extension, magic_mime_from_buffer
 from .storages import Storage
 
@@ -42,7 +45,7 @@ class FileAttachment(MutableDict):
         unique_name = str(uuid.uuid4())
 
         self.original_filename = original_filename
-        self.uploaded_on = time.time()
+        self.uploaded_on = int(time.time())
 
         # use python magic to get the content type
         content_type = self._guess_content_type(file)
@@ -62,9 +65,7 @@ class FileAttachment(MutableDict):
             raise MaximumAllowedFileLengthError(self.max_length)
 
     @classmethod
-    async def create_from(
-        cls, file: typing.IO, original_filename: str
-    ) -> "FileAttachment":
+    def create_from(cls, file: typing.IO, original_filename: str) -> "FileAttachment":
         instance = cls()
 
         instance.set_defaults(file, original_filename)
@@ -91,11 +92,11 @@ class FileAttachment(MutableDict):
         self["saved_filename"] = value
 
     @property
-    def uploaded_on(self) -> float:
+    def uploaded_on(self) -> int:
         return self.get("uploaded_on")
 
     @uploaded_on.setter
-    def uploaded_on(self, value: float):
+    def uploaded_on(self, value: int):
         self["uploaded_on"] = value
 
     @property
@@ -141,9 +142,7 @@ class ImageAttachment(FileAttachment):
     allowed_content_types: typing.List[str] = ["image/jpeg", "image/png"]
 
     @classmethod
-    async def create_from(
-        cls, file: typing.IO, original_filename: str
-    ) -> "ImageAttachment":
+    def create_from(cls, file: typing.IO, original_filename: str) -> "ImageAttachment":
         if Image is None:
             raise MissingDependencyError(
                 "pillow must be installed to use the 'ImageAttachment' class."
@@ -157,6 +156,106 @@ class ImageAttachment(FileAttachment):
         instance.width, instance.height = Image.open(file).size
 
         instance.storage.put(instance.path, file)
+
+        return instance
+
+    def get_focal_point(self) -> typing.Union[Rect, None]:
+        if None in [
+            self.focal_point_x,
+            self.focal_point_y,
+            self.focal_point_width,
+            self.focal_point_height,
+        ]:
+            return None
+
+        return Rect.from_point(
+            self.focal_point_x,
+            self.focal_point_y,
+            self.focal_point_width,
+            self.focal_point_height,
+        )
+
+    @property
+    def width(self) -> int:
+        return self.get("width")
+
+    @width.setter
+    def width(self, value: int) -> None:
+        self["width"] = value
+
+    @property
+    def height(self) -> int:
+        return self.get("height")
+
+    @height.setter
+    def height(self, value: int) -> None:
+        self["height"] = value
+
+    @property
+    def focal_point_x(self) -> int:
+        return self.get("focal_point_x")
+
+    @focal_point_x.setter
+    def focal_point_x(self, value: int) -> None:
+        self["focal_point_x"] = value
+
+    @property
+    def focal_point_y(self) -> int:
+        return self.get("focal_point_y")
+
+    @focal_point_y.setter
+    def focal_point_y(self, value: int) -> None:
+        self["focal_point_y"] = value
+
+    @property
+    def focal_point_width(self) -> int:
+        return self.get("focal_point_width")
+
+    @focal_point_width.setter
+    def focal_point_width(self, value: int) -> None:
+        self["focal_point_width"] = value
+
+    @property
+    def focal_point_height(self) -> int:
+        return self.get("focal_point_height")
+
+    @focal_point_height.setter
+    def focal_point_height(self, value: int) -> None:
+        self["focal_point_height"] = value
+
+
+class ImageRenditionAttachment(FileAttachment):
+    directory: str = "image-renditions"
+    focal_point = None
+
+    @classmethod
+    def create_from(  # type: ignore
+        cls, attachment: "ImageAttachment", filter_specs: typing.List[str] = []
+    ) -> "ImageRenditionAttachment":
+        instance = cls()
+
+        instance.focal_point = attachment.get_focal_point()
+
+        filter_cls = ImageFilter(specs=filter_specs)
+
+        with attachment.open as file:
+            original_image = Image.open(file)
+
+            generated_bytes = filter_cls.run(instance, original_image, io.BytesIO())
+            generated_image = Image.open(generated_bytes)
+
+            unique_name = str(uuid.uuid4())
+            image_format = generated_image.format.lower()
+            content_type = f"image/{image_format}"
+            extension = guess_extension(content_type)
+
+            instance.content_type = content_type
+            instance.extension = extension
+            instance.saved_filename = f"{unique_name}{extension}"
+            instance.width, instance.height = generated_image.size
+            instance.file_size = get_length(generated_bytes)
+
+            instance.storage.put(instance.path, generated_bytes)
 
         return instance
 
