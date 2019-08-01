@@ -231,13 +231,13 @@ class ImageAttachment(FileAttachment):
         since the rendition was created to determine whether the rendition
         needs to be recreated. 
         """
-        
+
         vary_fields = [
             str(self.file_size),
             str(self.focal_point_x),
             str(self.focal_point_y),
             str(self.focal_point_width),
-            str(self.focal_point_height)
+            str(self.focal_point_height),
         ]
         vary_string = "-".join(vary_fields)
         return hashlib.sha1(vary_string.encode("utf-8")).hexdigest()[:8]
@@ -302,4 +302,3 @@ class ImageRenditionAttachment(FileAttachment):
     @cache_key.setter
     def cache_key(self, value: str) -> None:
         self["cache_key"] = value
-    
