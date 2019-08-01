@@ -37,9 +37,11 @@ class MyImageModel(Base):
     renditions = orm.relationship("MyImageRenditionModel")
 
     def get_rendition(self, filter_specs: typing.List[str]) -> "MyImageRenditionModel":
+        filter_specs_str = "|".join(filter_specs)
+
         rendition = MyImageRenditionModel.query.filter(
             MyImageRenditionModel.image_id==self.id,
-            MyImageRenditionModel.filter_spec=="-".join(filter_specs),
+            MyImageRenditionModel.filter_spec==filter_specs_str,
             MyImageRenditionModel.file["cache_key"]==self.file.cache_key,
         ).one_or_none()
 
@@ -49,7 +51,7 @@ class MyImageModel(Base):
         rendition = MyImageRenditionModel(
             image_id=self.id,
             file=MyImageRendition.create_from(self.file, filter_specs),
-            filter_spec="-".join(filter_specs),
+            filter_spec=filter_specs_str,
         )
 
         session = sa.inspect(self).session
