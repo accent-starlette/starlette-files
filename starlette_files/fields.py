@@ -169,11 +169,11 @@ class ImageAttachment(FileAttachment):
         ]:
             return None
 
-        return Rect.from_point(
+        return Rect(
             self.focal_point_x,
             self.focal_point_y,
-            self.focal_point_width,
-            self.focal_point_height,
+            self.focal_point_x + self.focal_point_width,
+            self.focal_point_y + self.focal_point_height,
         )
 
     @property
