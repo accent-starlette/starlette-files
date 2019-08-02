@@ -69,6 +69,7 @@ class ImageFilter:
             ("max", operations.MinMaxOperation),
             ("fill", operations.FillOperation),
             ("crop", operations.CropOperation),
+            ("scale", operations.ScaleOperation),
             ("format", operations.FormatOperation),
         ]
 
