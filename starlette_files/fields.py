@@ -154,7 +154,8 @@ class ImageAttachment(FileAttachment):
         instance.set_defaults(file, original_filename)
         instance.validate()
 
-        instance.width, instance.height = Image.open(file).size
+        with Image.open(file) as image:
+            instance.width, instance.height = image.size
 
         instance.storage.put(instance.path, file)
 
@@ -257,25 +258,24 @@ class ImageRenditionAttachment(FileAttachment):
 
         filter_cls = ImageFilter(specs=filter_specs)
 
-        with attachment.open as file:
-            original_image = Image.open(file)
+        with attachment.open as original_file:
+            with Image.open(original_file) as original_image:
+                unique_name = str(uuid.uuid4())
+                generated_bytes = filter_cls.run(instance, original_image, io.BytesIO())
+                instance.cache_key = attachment.cache_key
+                instance.file_size = get_length(generated_bytes)
 
-            generated_bytes = filter_cls.run(instance, original_image, io.BytesIO())
-            generated_image = Image.open(generated_bytes)
+                with Image.open(generated_bytes) as generated_image:
+                    image_format = generated_image.format.lower()
+                    content_type = f"image/{image_format}"
+                    extension = guess_extension(content_type)
 
-            unique_name = str(uuid.uuid4())
-            image_format = generated_image.format.lower()
-            content_type = f"image/{image_format}"
-            extension = guess_extension(content_type)
+                    instance.content_type = content_type
+                    instance.extension = extension
+                    instance.saved_filename = f"{unique_name}{extension}"
+                    instance.width, instance.height = generated_image.size
 
-            instance.cache_key = attachment.cache_key
-            instance.content_type = content_type
-            instance.extension = extension
-            instance.saved_filename = f"{unique_name}{extension}"
-            instance.width, instance.height = generated_image.size
-            instance.file_size = get_length(generated_bytes)
-
-            instance.storage.put(instance.path, generated_bytes)
+                    instance.storage.put(instance.path, generated_bytes)
 
         return instance
 
