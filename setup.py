@@ -70,6 +70,10 @@ setup(
         'typing',
     ],
     extras_require={
+        "docs": [
+            "mkdocs",
+            "mkdocs-material",
+        ],
         "s3": [
             "boto3",
         ],

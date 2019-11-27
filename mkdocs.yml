@@ -1,0 +1,16 @@
+site_name: Starlette Files
+site_description: Starlette Files Documentation.
+
+theme:
+    name: 'material'
+
+repo_name: accent-starlette/starlette-files
+repo_url: https://github.com/accent-starlette/starlette-files
+edit_uri: ""
+
+nav:
+    - Introduction: 'index.md'
+
+markdown_extensions:
+  - markdown.extensions.codehilite:
+      guess_lang: false
