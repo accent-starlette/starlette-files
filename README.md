@@ -1,10 +1,6 @@
-<a href="https://travis-ci.org/accent-starlette/starlette-files">
-    <img src="https://travis-ci.org/accent-starlette/starlette-files.svg?branch=master" alt="Build Status">
-</a>
-
-<a href="https://codecov.io/gh/accent-starlette/starlette-files">
-  <img src="https://codecov.io/gh/accent-starlette/starlette-files/branch/master/graph/badge.svg" alt="Coverage" />
-</a>
+![](https://github.com/accent-starlette/starlette-files/workflows/Testing%20Workflow/badge.svg?branch=master)
+![](https://github.com/accent-starlette/starlette-files/workflows/Deploy%20to%20GitHub%20Pages/badge.svg?branch=master)
+![](https://codecov.io/gh/accent-starlette/starlette-files/branch/master/graph/badge.svg)
 
 ---
 

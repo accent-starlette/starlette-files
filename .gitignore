@@ -4,4 +4,4 @@
 *.pyc
 .idea
 .mypy_cache
-htmlcov
+coverage.xml
