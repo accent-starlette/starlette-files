@@ -17,5 +17,4 @@ def copy_stream(source, target: typing.IO, *, chunk_size: int = 16 * KB) -> int:
 
 def get_length(source: typing.IO) -> int:
     buffer = BytesIO()
-    length = copy_stream(source, buffer)
-    return length
+    return copy_stream(source, buffer)

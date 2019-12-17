@@ -13,8 +13,5 @@ def has_alpha(image: Image) -> bool:
 def to_rgb(image: Image) -> Image:
     # convert 1 and P images to RGB to improve resize quality
     if image.mode in ["1", "P"]:
-        if has_alpha(image):
-            image = image.convert("RGBA")
-        else:
-            image = image.convert("RGB")
+        image = image.convert("RGBA") if has_alpha(image) else image.convert("RGB")
     return image

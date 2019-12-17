@@ -81,14 +81,11 @@ class FillOperation(Operation):
                         + (crop_min_height - crop_max_height) * crop_closeness
                     )
 
-        # Find focal point UV
-        if focal_point is not None:
             fp_x, fp_y = focal_point.centroid
         else:
             # Fall back to positioning in the centre
             fp_x = image_width / 2
             fp_y = image_height / 2
-
         fp_u = fp_x / image_width
         fp_v = fp_y / image_height
 
