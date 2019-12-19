@@ -13,6 +13,7 @@ nav:
     - Storages: 'storages.md'
     - Handling Files: 'handling_files.md'
     - Handling Images: 'handling_images.md'
+    - Image Operations: 'image_operations.md'
 
 markdown_extensions:
   - markdown.extensions.admonition

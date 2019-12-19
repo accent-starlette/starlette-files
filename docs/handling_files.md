@@ -3,8 +3,8 @@
 Now you have decided on the storage its time to start saving files.
 
 The first thing to do it to setup an attachment class. This is the SQLAlchemy
-field that stores the info for your file including its location in the storage. It 
-is also what interacts between the table and the storage to save and retrieve the files bytes.
+field that stores the info for the file including its location in the storage. It 
+is also what interacts between the table and the storage to save and retrieve the files.
 
 ```python
 from starlette_files.constants import MB
@@ -74,8 +74,8 @@ A `FileAttachment` is a `sqlalchemy.ext.mutable.MutableDict` and therefore store
 JSON as its value in the database. An example of this is:
 
 ```bash
->>> file = session(File).query.first()
->>> file.file
+>>> instance = session.query(File).first()
+>>> instance.file
 {
     'original_filename': 'example.pdf',
     'uploaded_on': 1576792678,
@@ -86,10 +86,10 @@ JSON as its value in the database. An example of this is:
 }
 ```
 
-Each of the above has a property too so your can just do:
+Each of the above has a property too so you can just do:
 
 ```bash
->>> file.file.original_filename
+>>> instance.file.original_filename
 'example.pdf'
 ```
 

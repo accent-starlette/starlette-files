@@ -18,7 +18,8 @@ my_storage = FileSystemStorage(root_path="/path-to-storage")
 ## S3 Storage
 
 The S3 storage uses an amazon S3 bucket to store its files. You will need an Amazon 
-account and there is an additional fee to using the S3 service. For more details see [here](https://aws.amazon.com/s3/).
+account and there is an additional fee to using the S3 service.
+For more details see [here](https://aws.amazon.com/s3/).
 
 You will need an IAM account that has access to your bucket.
 

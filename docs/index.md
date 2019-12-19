@@ -6,8 +6,8 @@ are located within the given storage.
 
 There are currently two different types of storage. Amazon's S3 Simple Storage and a local file system storage.
 
-In addition to this there is additional functionality when dealing with images.
-This includes operations such as resizing, cropping and changing the file format without 
+In addition to this there is additional functionality when dealing specifically with images.
+This includes operations such as resizing, cropping and changing the file format. This is without 
 changing the original file.
 
 ## Getting Started - Installation
