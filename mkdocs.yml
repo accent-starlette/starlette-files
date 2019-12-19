@@ -10,7 +10,11 @@ edit_uri: ""
 
 nav:
     - Introduction: 'index.md'
+    - Storages: 'storages.md'
+    - Handling Files: 'handling_files.md'
+    - Handling Images: 'handling_images.md'
 
 markdown_extensions:
+  - markdown.extensions.admonition
   - markdown.extensions.codehilite:
       guess_lang: false
