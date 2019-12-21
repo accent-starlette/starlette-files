@@ -36,9 +36,12 @@ class Storage:
 
     def locate(self, filename: str) -> str:
         """
-        If overridden in the inherited class, should locates the file's url
-        to share in public space.
+        If overridden in the inherited class, should locate the file's url
+        to share in public space or a path of some sort to locate it.
 
-        :param attachment: The :class:`.Attachment` object to
+        This method is not used internally by starlette-files it is just a 
+        handy helper that gets returned by an Attachment property.
+
+        :param filename: The filename to locate.
         """
         raise NotImplementedError()

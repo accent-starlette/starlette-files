@@ -176,7 +176,7 @@ f"fill-{width}x{height}-c100"
 
 This will crop the image as much as it can, without cropping into the focal point.
 
-If you find that -c100 is too close, you can try `-c75` or `-c50`. Any whole number from 0 to 100 is accepted.
+If you find that `-c100` is too close, you can try `-c75` or `-c50`. Any whole number from 0 to 100 is accepted.
 
 ### Format
 

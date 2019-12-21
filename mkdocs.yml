@@ -14,6 +14,7 @@ nav:
     - Handling Files: 'handling_files.md'
     - Handling Images: 'handling_images.md'
     - Image Operations: 'image_operations.md'
+    - Example: 'example.md'
 
 markdown_extensions:
   - markdown.extensions.admonition
