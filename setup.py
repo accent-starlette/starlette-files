@@ -77,6 +77,9 @@ setup(
         "s3": [
             "boto3",
         ],
+        "dropbox": [
+            "dropbox",
+        ],
         "image": [
             "Pillow",
         ]
